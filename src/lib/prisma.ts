@@ -3,19 +3,9 @@ import { PrismaClient } from '@prisma/client'
 // Lazy evaluate PrismaClient initialization to avoid Vercel build-time connection errors
 const getPrismaClient = () => {
     if (!globalThis.prismaGlobal) {
-        // If DATABASE_URL is missing during build time, provide a dummy to pass instantiation syntax
-        const dummyUrl = "postgresql://postgres:dummy@localhost:5432/postgres";
-        if (!process.env.DATABASE_URL) {
-            process.env.DATABASE_URL = "postgresql://postgres:dummy@localhost:5432/postgres";
-        }
-        globalThis.prismaGlobal = new PrismaClient({
-            // @ts-ignore Prisma 7 removes datasources/datasourceUrl from TS types, but it works at runtime.
-            datasources: {
-                db: {
-                    url: process.env.DATABASE_URL,
-                },
-            },
-        })
+        // Prisma 7에서는 생성자에 직접 URL을 넘기기보다 
+        // 환경 변수 DATABASE_URL을 시스템 레벨에서 참조하는 것을 선호합니다.
+        globalThis.prismaGlobal = new PrismaClient();
     }
     return globalThis.prismaGlobal
 }
