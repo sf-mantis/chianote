@@ -9,8 +9,12 @@ const getPrismaClient = () => {
             process.env.DATABASE_URL = "postgresql://postgres:dummy@localhost:5432/postgres";
         }
         globalThis.prismaGlobal = new PrismaClient({
-            // @ts-ignore Prisma 7 breaking change workaround specified by user
-            datasourceUrl: process.env.DATABASE_URL,
+            // @ts-ignore Prisma 7 removes datasources/datasourceUrl from TS types, but it works at runtime.
+            datasources: {
+                db: {
+                    url: process.env.DATABASE_URL,
+                },
+            },
         })
     }
     return globalThis.prismaGlobal
