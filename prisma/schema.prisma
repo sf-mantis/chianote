@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  children  Child[]
+}
+
+model Child {
+  id          String         @id @default(uuid())
+  parentId    String
+  parent      User           @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  name        String
+  dateOfBirth DateTime
+  gender      String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  records     ToothRecord[]
+  appointments Appointment[]
+  brushing    BrushingRecord[]
+}
+
+model ToothRecord {
+  id        String   @id @default(uuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  toothId   String   // FDI notation e.g., "11", "51"
+  status    String   // e.g., "HEALTHY", "DECAYED", "TREATED", "EXTRACTED"
+  notes     String?
+  imageUrl  String?  // S3 URL if any
+  recordDate DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  childId     String
+  child       Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  clinicName  String
+  date        DateTime
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BrushingRecord {
+  id        String   @id @default(uuid())
+  childId   String
+  child     Child    @relation(fields: [childId], references: [id], onDelete: Cascade)
+  date      DateTime @default(now()) // Storing the date/time the 3 min was completed
+  duration  Int      @default(180)   // For future proofing if duration varies
+  points    Int      @default(10)    // Points earned
+}
