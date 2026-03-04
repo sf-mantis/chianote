@@ -8,7 +8,10 @@ const getPrismaClient = () => {
         if (!process.env.DATABASE_URL) {
             process.env.DATABASE_URL = "postgresql://postgres:dummy@localhost:5432/postgres";
         }
-        globalThis.prismaGlobal = new PrismaClient()
+        globalThis.prismaGlobal = new PrismaClient({
+            // @ts-ignore Prisma 7 breaking change workaround specified by user
+            datasourceUrl: process.env.DATABASE_URL,
+        })
     }
     return globalThis.prismaGlobal
 }
