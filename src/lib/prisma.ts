@@ -1,11 +1,18 @@
 import { PrismaClient } from '@prisma/client'
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
 
 // Lazy evaluate PrismaClient initialization to avoid Vercel build-time connection errors
 const getPrismaClient = () => {
     if (!globalThis.prismaGlobal) {
-        // Prisma 7에서는 생성자에 직접 URL을 넘기기보다 
-        // 환경 변수 DATABASE_URL을 시스템 레벨에서 참조하는 것을 선호합니다.
-        globalThis.prismaGlobal = new PrismaClient();
+        if (!process.env.DATABASE_URL) {
+            process.env.DATABASE_URL = "postgresql://postgres:dummy@localhost:5432/postgres";
+        }
+
+        const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+        const adapter = new PrismaPg(pool);
+
+        globalThis.prismaGlobal = new PrismaClient({ adapter });
     }
     return globalThis.prismaGlobal
 }
